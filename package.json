@@ -1,6 +1,6 @@
 {
   "name": "vscode-extension-updater",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Visual Studio Code custom extension updater for private extension marketplaces",
   "repository": "https://github.com/jan-dolejsi/vscode-extension-updater",
   "main": "dist/index.js",
@@ -21,21 +21,22 @@
   ],
   "author": "Jan Dolejsi",
   "contributors": [
-    "Jørgen P. Tjernø"
+    "Jørgen P. Tjernø",
+    "Ananda Bibek Ray"
   ],
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "4.3.1",
-    "@types/mocha": "^9.1.0",
-    "@types/node": "^13.13.51",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
     "@types/tmp": "^0.2.0",
     "@types/vscode": "^1.55.0",
-    "@typescript-eslint/eslint-plugin": "^5.21.0",
-    "@typescript-eslint/parser": "^5.21.0",
-    "chai": "^4.3.6",
+    "@typescript-eslint/eslint-plugin": "^5.49.0",
+    "@typescript-eslint/parser": "^5.49.0",
+    "chai": "^4.3.7",
     "copyfiles": "^2.4.1",
-    "eslint": "^8.14.0",
-    "mocha": "^9.2.2",
+    "eslint": "^8.33.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "typescript": "^4.6.4"
   },
