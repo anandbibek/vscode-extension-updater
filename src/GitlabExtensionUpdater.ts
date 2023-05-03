@@ -78,7 +78,7 @@ export class GitLabExtensionUpdater extends ExtensionUpdater {
      * @returns filename of the vsix file used at the end of download URL
      */
     protected getFileName(): string {
-        return this.getExtensionManifest().displayName + '.vsix';
+        return this.getExtensionManifest().name + '.vsix';
     }
 
     /**

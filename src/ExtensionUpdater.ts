@@ -26,6 +26,7 @@ export interface ExtensionVersion {
  * Extension `package.json` fields
  */
 export interface ExtensionManifest {
+    name: string;
     displayName: string;
     version: string;
 }
@@ -106,7 +107,7 @@ export abstract class ExtensionUpdater {
      */
     protected async download(downloadUri: Uri): Promise<Uri> {
         console.log(`Downloading extension from ${downloadUri}`);
-        const downloadedPath = await asyncTmp.file(0o644, this.extensionManifest.displayName, '.vsix');
+        const downloadedPath = await asyncTmp.file(0o644, this.extensionManifest.name, '.vsix');
         const localFile = fs.createWriteStream(downloadedPath.path);
 
         return new Promise<Uri>((resolve, reject) => {

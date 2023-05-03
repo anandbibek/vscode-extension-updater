@@ -49,7 +49,7 @@ export class ConfluenceExtensionUpdater extends ExtensionUpdater {
      * Override this logic, if you have a different naming convention.
      */
     protected getConfluenceFileName(): string {
-        return this.getExtensionManifest().displayName + '.vsix';
+        return this.getExtensionManifest().name + '.vsix';
     }
 
     protected async getVersion(): Promise<ExtensionVersion> {
