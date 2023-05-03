@@ -104,7 +104,7 @@ export class GitLabExtensionUpdater extends ExtensionUpdater {
                         }
                         else {
                             console.dir(results);
-                            reject(new Error(`Unexpected response from Confluence. Full response is in the console/log.`));
+                            reject(new Error(`Unexpected response from Gitlab. Full response is in the console/log.`));
                         }
                     });
                 }).on("error", (err) => {

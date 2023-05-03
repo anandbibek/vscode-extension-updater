@@ -1,8 +1,8 @@
 # Visual Studio Code custom extension updater for private extension marketplaces
 
-[![CI](https://github.com/jan-dolejsi/vscode-extension-updater/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/jan-dolejsi/vscode-extension-updater/actions/workflows/npm-publish.yml)
-[![npm](https://img.shields.io/npm/v/vscode-extension-updater)](https://www.npmjs.com/package/vscode-extension-updater)
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/jan-dolejsi/vscode-extension-updater)
+[![CI](https://github.com/anandbibek/vscode-extension-updater/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/anandbibek/vscode-extension-updater/actions/workflows/npm-publish.yml)
+[![npm](https://img.shields.io/npm/v/vscode-extension-updater-gitlab)](https://www.npmjs.com/package/vscode-extension-updater-gitlab)
+
 
 For context and motivation, please look at the [Private extension market](https://github.com/microsoft/vscode/issues/21839)
 a.k.a _side loading_.
@@ -22,8 +22,9 @@ This package purpose is to:
 * Provide a base class for extension update abstracting from the type of the private repository
 * Provider specific implementations (please contribute, if you see fit). So far there is support for
   * Confluence wiki
+  * Gitlab package registry
 
-Here is a demo:
+Here is a demo of confluence extension:
 
 ![Extension auto-update from Confluence wiki attachment](confluence_wiki_extension_updater.gif)
 
@@ -32,30 +33,15 @@ Here is a demo:
 Fetch the package using
 
 ```bash
-npm install vscode-extension-updater
+npm install vscode-extension-updater-gitlab
 ```
 
-### Using the Confluence wiki based private extension repository
-
-Assuming you have a Confluence wiki. Package your extension using package that looks like this:
-
-```bash
-vsce package \
-    --out=<package.name>.vsix \
-    --baseContentUrl=https://your-confluence-wiki.com/download/attachments/123456/ \
-    --baseImagesUrl=https://your-confluence-wiki.com/download/attachments/123456/
-```
-
-Where `<package.name>` is the name of your extension as defined in your `package.json`.
-The `123456` stands for the page ID, where this extension's .vsix is uploaded as attachment.
-
-This means you can setup one page per extension and thus create a catalog (just hort of marketplace)
-of your private extensions.
+### Using the Gitlab Package registry based private extension repository
 
 Put this to your `extension.ts` (or `.js` if you insist) `activate` function:
 
 ```typescript
-import { ConfluenceExtensionUpdater } from 'vscode-extension-updater';
+import { GitLabExtensionUpdater } from 'vscode-extension-updater-gitlab';
 
 export function activate(context: ExtensionContext): void {
 
@@ -68,9 +54,11 @@ export function activate(context: ExtensionContext): void {
 
 async function checkNewVersion(context: ExtensionContext, showUpToDateConfirmation: boolean): Promise<void> {
     try {
-        await new ConfluenceExtensionUpdater(context, {
-            confluenceHost: 'your-confluence-wiki.com',
-            confluencePageId: 123456
+        await new GitLabExtensionUpdater(context, {
+            gitlabHost: 'linux-git.myorg.com',
+            projectId: 31775,
+            packageName: 'dev',
+            packageType: 'generic',
             showUpToDateConfirmation: showUpToDateConfirmation
         }).getNewVersionAndInstall();
     }
@@ -79,6 +67,12 @@ async function checkNewVersion(context: ExtensionContext, showUpToDateConfirmati
     }
 }
 ```
+
+ - `gitlabHost` is your gitlab URL.
+ - `projectId` is your package registry project's ID. Settings > General > Project ID
+ - `packageName` is the fuzzy name of the package where artifact is uploaded.
+ - `packageType` is the exact name of package type. Currently 'generic'.
+
 
 ### Adding manual check for new version
 
@@ -100,7 +94,6 @@ VS Code supports extension-specific commands. They show in the menu that display
                     "when": "extension == publisherId.extensionId && extensionStatus == installed"
                 }
             ]
-...
 }
 ```
 
@@ -139,3 +132,7 @@ export class YourExtensionUpdater extends ExtensionUpdater {
 ```
 
 And the base class would do the same if you integrate it into your extension's `activate` function.
+
+
+## Original repo with Confluence downloader examples
+[jan-dolejsi/vscode-extension-updater](https://github.com/jan-dolejsi/vscode-extension-updater)

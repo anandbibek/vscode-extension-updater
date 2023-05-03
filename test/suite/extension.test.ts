@@ -1,4 +1,4 @@
-import { ExtensionContext, extensions } from "vscode";
+import { ExtensionContext } from "vscode";
 import { GitLabExtensionUpdater } from "../../src/GitlabExtensionUpdater";
 import { MockContext } from "./mocks";
 
@@ -30,7 +30,7 @@ describe("GitlabExtensionUpdater", () => {
               return new GitLabExtensionUpdater(extensionContext, {
                   gitlabHost: 'linux-git.oraclecorp.com',
                   projectId: 31775,
-                  packageName: 'release',
+                  packageName: 'dev',
                   packageType: 'generic',
                   showUpToDateConfirmation: true
               }).getNewVersionAndInstall();
