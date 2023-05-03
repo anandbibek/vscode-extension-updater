@@ -9,17 +9,17 @@ import { ExtensionContext, Uri } from 'vscode';
 import { ExtensionUpdater, ExtensionUpdaterOptions, ExtensionVersion } from './ExtensionUpdater';
 
 export interface GitlabOptions {
-  /** Gitlab host e.g. `linux-git.mycorp.com` */
-  gitlabHost: string;
+    /** Gitlab host e.g. `linux-git.mycorp.com` */
+    gitlabHost: string;
 
-  /** Gitlab project ID. Settings > General > Project ID */
-  projectId: number;
+    /** Gitlab project ID. Settings > General > Project ID */
+    projectId: number;
 
-  /** Gitlab package registry type . Ex: 'generic'*/
-  packageType: string;
+    /** Gitlab package registry type . Ex: 'generic'*/
+    packageType: string;
 
-  /** Gitlab package registry package name. Ex: 'dev-builds'*/
-  packageName: string;
+    /** Gitlab package registry package name. Ex: 'dev-builds'*/
+    packageName: string;
 }
 
 /**
@@ -28,88 +28,90 @@ export interface GitlabOptions {
  * https://docs.gitlab.com/ee/api/packages.html
  */
 export class GitLabExtensionUpdater extends ExtensionUpdater {
-  
-  /** Gitlab host e.g. `linux-git.mycorp.com` */
-  private gitlabHost: string;
 
-  /** Gitlab project ID. Settings > General > Project ID */
-  private projectId: number;
+    /** Gitlab host e.g. `linux-git.mycorp.com` */
+    private gitlabHost: string;
 
-  /** Gitlab package registry type . Ex: 'generic'*/
-  private packageType: string;
+    /** Gitlab project ID. Settings > General > Project ID */
+    private projectId: number;
 
-  /** Gitlab package registry package name. Ex: 'dev-builds'*/
-  private packageName: string;
+    /** Gitlab package registry type . Ex: 'generic'*/
+    private packageType: string;
 
-  /**
-   * Constructs the gitlab extension updater for the current extension.
-   * @param context extension context
-   * @param options gitlab options
-   */
-  constructor(context: ExtensionContext, options: GitlabOptions & ExtensionUpdaterOptions) {
-      super(context, options);
-      this.gitlabHost = options.gitlabHost;
-      this.projectId = options.projectId;
-      this.packageType = options.packageType;
-      this.packageName = options.packageName;
-  }
+    /** Gitlab package registry package name. Ex: 'dev-builds'*/
+    private packageName: string;
 
-  private createVersionUrl(): string {
-      return `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages?sort=desc&status=default&order_by=version&package_name=${this.packageName}`;
-  }
+    /**
+     * Constructs the gitlab extension updater for the current extension.
+     * @param context extension context
+     * @param options gitlab options
+     */
+    constructor(context: ExtensionContext, options: GitlabOptions & ExtensionUpdaterOptions) {
+        super(context, options);
+        this.gitlabHost = options.gitlabHost;
+        this.projectId = options.projectId;
+        this.packageType = options.packageType;
+        this.packageName = options.packageName;
+    }
 
-  private createDownloadUrl(packageName : string, version : string): string {
-      return `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages/${this.packageType}/${packageName}/${version}/${this.getFileName()}`;
-  }
+    private createVersionUrl(): string {
+        return `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages?sort=desc&status=default&order_by=version&package_name=${this.packageName}`;
+    }
 
-  /**
-   * By default, this class uses the extension name (without version) and the `.vsix` suffix to locate the extension binaries in the list of Confluence attachments.
-   * Override this logic, if you have a different naming convention.
-   */
-  protected getFileName(): string {
-      return this.getExtensionManifest().name + '.vsix';
-  }
+    private createDownloadUrl(packageName: string, version: string): string {
+        return `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages/${this.packageType}/${packageName}/${version}/${this.getFileName()}`;
+    }
 
-  protected async getVersion(): Promise<ExtensionVersion> {
+    protected getFileName(): string {
+        return this.getExtensionManifest().displayName + '.vsix';
+    }
 
-      const url = this.createVersionUrl();
-      console.log(`Checking for new versions at ${url}`);
+    protected async getVersion(): Promise<ExtensionVersion> {
 
-      return new Promise<ExtensionVersion>((resolve, reject) => {
-          https.get(url,
-              {
-                  headers: {
-                      "Accept": " application/json",
-                  }
-              },
-              (resp) => {
-                  let data = '';
-                  // A chunk of data has been received.
-                  resp.on('data', (chunk) => {
-                      data += chunk;
-                  });
-                  // The whole response has been received. Print out the result.
-                  resp.on('end', () => {
-                      const results = JSON.parse(data);
-                      if (results && results.length > 0) {
-                          const result0 = results[0];
-                          const version = result0["version"]
-                          const when = Date.parse(result0["created_at"]);
-                          const name = result0["name"];
-                          const downloadUrl = Uri.parse(this.createDownloadUrl(name, version));
-                          const tags: string[] = result0['tags'];
-                          resolve({ version, when, downloadUrl, tags: tags });
-                      }
-                      else {
-                          console.dir(results);
-                          reject(new Error(`Unexpected response from Confluence. Full response is in the console/log.`));
-                      }
-                  });
-              }).on("error", (err) => {
-                  console.error("Error: " + err.message);
-                  reject(err);
-              });
-      });
-  }
-  
+        const url = this.createVersionUrl();
+        console.log(`Checking for new versions at ${url}`);
+
+        return new Promise<ExtensionVersion>((resolve, reject) => {
+            let extensionVersion: ExtensionVersion = {
+                version: '',
+                when: 0,
+                downloadUrl: Uri.parse('')
+            };
+            https.get(url,
+                {
+                    headers: {
+                        "Accept": " application/json",
+                    }
+                },
+                (resp) => {
+                    let data = '';
+                    // A chunk of data has been received.
+                    resp.on('data', (chunk) => {
+                        data += chunk;
+                    });
+                    // The whole response has been received. Print out the result.
+                    resp.on('end', () => {
+                        const results = JSON.parse(data);
+                        if (results && results.length > 0) {
+                            const result0 = results[0];
+                            const version = result0["version"]
+                            const when = Date.parse(result0["created_at"]);
+                            const name = result0["name"];
+                            const downloadUrl = Uri.parse(this.createDownloadUrl(name, version));
+                            const tags: string[] = result0['tags'];
+                            extensionVersion = { version, when, downloadUrl, tags: tags };
+                            resolve(extensionVersion);
+                        }
+                        else {
+                            console.dir(results);
+                            reject(new Error(`Unexpected response from Confluence. Full response is in the console/log.`));
+                        }
+                    });
+                }).on("error", (err) => {
+                    console.error("Error: " + err.message);
+                    reject(err);
+                });
+        });
+    }
+
 }

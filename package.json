@@ -10,6 +10,7 @@
     "pretest": "npx eslint src --ext ts && npm run compile",
     "build": "npx tsc",
     "compile": "npx tsc && npm run copyToDist",
+    "watch-tests": "npx tsc -p . -w --outDir out",
     "copyToDist": "npx copyfiles --error --verbose --flat ./out/src/*.* ./dist/",
     "prepack": "npm install-test && npm run copyToDist",
     "watch": "npx tsc -w"
@@ -28,12 +29,14 @@
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "4.3.1",
+    "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
     "@types/tmp": "^0.2.0",
     "@types/vscode": "^1.55.0",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
+    "@vscode/test-electron": "^2.2.2",
     "chai": "^4.3.7",
     "copyfiles": "^2.4.1",
     "eslint": "^8.33.0",

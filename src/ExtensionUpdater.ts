@@ -27,8 +27,6 @@ export interface ExtensionVersion {
  */
 export interface ExtensionManifest {
     displayName: string;
-    name: string;
-    publisher: string;
     version: string;
 }
 
@@ -44,17 +42,16 @@ export interface ExtensionUpdaterOptions {
  */
 export abstract class ExtensionUpdater {
 
-    /** Extension publisher + name. 
-     * This is used as a key to store the last installed version 
-     * as well as for the name of the temporary downloaded .vsix file. */
+    /** Extension name + version. 
+     * This is used for the name of the temporary downloaded .vsix file. */
     private extensionFullName: string;
 
     /** Extension's `package.json` */
     extensionManifest: ExtensionManifest;
 
-    constructor(private context: ExtensionContext, private options?: ExtensionUpdaterOptions) {
+    constructor(context: ExtensionContext, private options?: ExtensionUpdaterOptions) {
         this.extensionManifest = context.extension.packageJSON as ExtensionManifest;
-        this.extensionFullName = this.extensionManifest.publisher + '.' + this.extensionManifest.name;
+        this.extensionFullName = this.extensionManifest.displayName + '-' + this.extensionManifest.version;
     }
 
     protected getExtensionManifest(): ExtensionManifest {
@@ -150,11 +147,11 @@ export abstract class ExtensionUpdater {
         const latestVersion = await this.getVersion();
         const installedVersion = this.getCurrentVersion();
 
-        const comparisonResult = compareVersions(installedVersion, latestVersion.version);
+        const comparisonResult = compareVersions(latestVersion.version, installedVersion);
         if (this.options?.reInstall ||  comparisonResult === 1 ) {
             return latestVersion;
 
-        } else if (comparisonResult === 0 && this.options?.showUpToDateConfirmation) {
+        } else if (comparisonResult <= 0 && this.options?.showUpToDateConfirmation) {
             const message = `Extension up to date: '${this.extensionManifest.displayName} v${this.extensionManifest.version}'`;
             window.showInformationMessage(message);
         }
