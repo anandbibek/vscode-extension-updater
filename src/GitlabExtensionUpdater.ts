@@ -54,18 +54,37 @@ export class GitLabExtensionUpdater extends ExtensionUpdater {
         this.packageName = options.packageName;
     }
 
-    protected createVersionUrl(): string {
+    /**
+     * The URL for searching package API. It uses the fuzzy package name and orders by version in descending order.
+     * Newest version to be at top. Packages in statuses like error, etc will be skipped.
+     * @returns URL which should return a package API endpoint with required filters
+     */
+    private createVersionUrl(): string {
         return `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages?sort=desc&status=default&order_by=version&package_name=${this.packageName}`;
     }
 
-    protected createDownloadUrl(packageName: string, version: string): string {
+    /**
+     * Since gitlab does not provide downloadable URL as part of package API, it has to be constructed manually
+     * @param packageName the exact package name which is to be used for constructing download URL
+     * @param version version number of the package to be downloaded
+     * @returns URL for download of the package
+     */
+    private createDownloadUrl(packageName: string, version: string): string {
         return `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages/${this.packageType}/${packageName}/${version}/${this.getFileName()}`;
     }
 
+    /**
+     * Override this if required to modify the filename being used at the download URL
+     * @returns filename of the vsix file used at the end of download URL
+     */
     protected getFileName(): string {
         return this.getExtensionManifest().displayName + '.vsix';
     }
 
+    /**
+     * Queries Gitlab package API to find latest version of given package 
+     * @returns Details of the latest package 
+     */
     protected async getVersion(): Promise<ExtensionVersion> {
 
         const url = this.createVersionUrl();

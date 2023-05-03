@@ -42,16 +42,11 @@ export interface ExtensionUpdaterOptions {
  */
 export abstract class ExtensionUpdater {
 
-    /** Extension name + version. 
-     * This is used for the name of the temporary downloaded .vsix file. */
-    private extensionFullName: string;
-
     /** Extension's `package.json` */
     extensionManifest: ExtensionManifest;
 
     constructor(context: ExtensionContext, private options?: ExtensionUpdaterOptions) {
         this.extensionManifest = context.extension.packageJSON as ExtensionManifest;
-        this.extensionFullName = this.extensionManifest.displayName + '-' + this.extensionManifest.version;
     }
 
     protected getExtensionManifest(): ExtensionManifest {
@@ -190,8 +185,10 @@ export abstract class ExtensionUpdater {
      */
     private async consentToReload(): Promise<boolean> {
         const reload = 'Reload';
-        const answer = await window.showInformationMessage(`New version of '${this.extensionManifest.displayName}' was installed.`,
-            {}, reload, 'Later');
+        const answer = await window.showInformationMessage(
+            `New version of '${this.extensionManifest.displayName}' was installed.`,
+            {}, reload, 'Later'
+        );
             
         return answer === reload;
     }
