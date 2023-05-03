@@ -1,6 +1,6 @@
 {
-  "name": "vscode-extension-updater",
-  "version": "2.0.0",
+  "name": "vscode-extension-updater-gitlab",
+  "version": "3.0.0",
   "description": "Visual Studio Code custom extension updater for private extension marketplaces",
   "repository": "https://github.com/jan-dolejsi/vscode-extension-updater",
   "main": "dist/index.js",
@@ -19,9 +19,10 @@
     "extension",
     "marketplace"
   ],
-  "author": "Jan Dolejsi",
+  "author": "Ananda Bibek Ray",
   "contributors": [
     "Jørgen P. Tjernø",
+    "Jan Dolejsi",
     "Ananda Bibek Ray"
   ],
   "license": "MIT",
@@ -41,6 +42,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
+    "compare-versions": "^6.0.0-rc.1",
     "tmp": "^0.2.1"
   }
 }

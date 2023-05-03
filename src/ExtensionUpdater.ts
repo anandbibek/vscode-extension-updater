@@ -9,12 +9,13 @@ import * as fs from 'fs';
 import { ExtensionContext, Uri, commands, window, ProgressLocation } from 'vscode';
 import * as asyncTmp from './asynctmp';
 import { sleep } from './utils';
+import { compareVersions } from 'compare-versions';
 
 /**
  * Info about the new package version.
  */
 export interface ExtensionVersion {
-    version: number;
+    version: string;
     when: number;
     downloadUrl: Uri;
     /** labels/tags in the repository */
@@ -28,6 +29,7 @@ export interface ExtensionManifest {
     displayName: string;
     name: string;
     publisher: string;
+    version: string;
 }
 
 export interface ExtensionUpdaterOptions {
@@ -42,10 +44,6 @@ export interface ExtensionUpdaterOptions {
  */
 export abstract class ExtensionUpdater {
 
-    /** Key for storing the last installed version in the `globalState` */
-    private installedExtensionVersionKey: string;
-
-
     /** Extension publisher + name. 
      * This is used as a key to store the last installed version 
      * as well as for the name of the temporary downloaded .vsix file. */
@@ -57,15 +55,6 @@ export abstract class ExtensionUpdater {
     constructor(private context: ExtensionContext, private options?: ExtensionUpdaterOptions) {
         this.extensionManifest = context.extension.packageJSON as ExtensionManifest;
         this.extensionFullName = this.extensionManifest.publisher + '.' + this.extensionManifest.name;
-        this.installedExtensionVersionKey = this.extensionFullName + '.lastInstalledUpdaterVersion';
-
-        // Migrate any version info from the old key to the new key
-        const deprecatedExtensionVersionKey = this.extensionFullName + '.lastInstalledConfluenceAttachmentVersion';
-        const oldVersion = context.globalState.get(deprecatedExtensionVersionKey);
-        if (oldVersion) {
-            context.globalState.update(this.installedExtensionVersionKey, oldVersion);
-            context.globalState.update(deprecatedExtensionVersionKey, undefined);
-        }
     }
 
     protected getExtensionManifest(): ExtensionManifest {
@@ -92,9 +81,6 @@ export abstract class ExtensionUpdater {
                 await this.showProgress(`Installing ${this.extensionManifest.displayName}`, () =>
                     this.install(vsixUri));
 
-                // store the version number installed
-                this.context.globalState.update(this.installedExtensionVersionKey, newVersion.version);
-
                 // 4. reload
                 if (await this.consentToReload()) {
                     await commands.executeCommand('workbench.action.reloadWindow');
@@ -104,9 +90,6 @@ export abstract class ExtensionUpdater {
         else {
             const message = `No update found for '${this.extensionManifest.displayName}'`;
             console.log(message);
-            if (this.options?.showUpToDateConfirmation) {
-                window.showInformationMessage(message);
-            }
         }
     }
 
@@ -165,11 +148,15 @@ export abstract class ExtensionUpdater {
      */
     private async getNewVersion(): Promise<ExtensionVersion | undefined> {
         const latestVersion = await this.getVersion();
-
         const installedVersion = this.getCurrentVersion();
 
-        if (this.options?.reInstall || installedVersion < latestVersion.version) {
+        const comparisonResult = compareVersions(installedVersion, latestVersion.version);
+        if (this.options?.reInstall ||  comparisonResult === 1 ) {
             return latestVersion;
+
+        } else if (comparisonResult === 0 && this.options?.showUpToDateConfirmation) {
+            const message = `Extension up to date: '${this.extensionManifest.displayName} v${this.extensionManifest.version}'`;
+            window.showInformationMessage(message);
         }
         else {
             return undefined;
@@ -182,8 +169,8 @@ export abstract class ExtensionUpdater {
         return window.withProgress({ location: ProgressLocation.Window, title: message }, payload);
     }
 
-    private getCurrentVersion(): number {
-        return this.context.globalState.get<number>(this.installedExtensionVersionKey) ?? -1;
+    private getCurrentVersion(): string {
+        return this.extensionManifest.version;
     }
 
     /**
@@ -192,26 +179,21 @@ export abstract class ExtensionUpdater {
      */
     private async consentToInstall(newVersion: ExtensionVersion): Promise<boolean> {
         const downloadAndInstall = 'Download and Install';
-
-        const currentVersion = this.getCurrentVersion();
-        const versionDiff = newVersion.version - currentVersion;
-        const versionsBehindWarning = currentVersion > -1 && versionDiff > 1 ?
-            `is ${versionDiff} release behind and ` : '';
-        const answer = await window.showWarningMessage(`New version of the '${this.extensionManifest.displayName}' extension is available. The one you are currently using ${versionsBehindWarning}may no longer work correctly with the other tools.`,
-            {}, downloadAndInstall);
-
+        const answer = await window.showInformationMessage(
+            `New version ${newVersion.version} of '${this.extensionManifest.displayName}' is available.`,
+            {}, downloadAndInstall, 'Later'
+        );
         return answer === downloadAndInstall;
     }
 
     /**
-     * Requests user confirmation to reload the installed extension
+     * Requests user confirmation to reload the window
      */
     private async consentToReload(): Promise<boolean> {
         const reload = 'Reload';
-
-        const answer = await window.showWarningMessage(`New version of the '${this.extensionManifest.displayName}' was installed.`,
+        const answer = await window.showInformationMessage(`New version of '${this.extensionManifest.displayName}' was installed.`,
             {}, reload, 'Later');
-
+            
         return answer === reload;
     }
 }
