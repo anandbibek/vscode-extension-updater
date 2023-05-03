@@ -1,6 +1,6 @@
 {
   "name": "vscode-extension-updater-gitlab",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Visual Studio Code custom extension updater for private extension marketplaces",
   "repository": "https://github.com/jan-dolejsi/vscode-extension-updater",
   "main": "dist/index.js",
