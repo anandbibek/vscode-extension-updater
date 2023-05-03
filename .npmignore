@@ -1,4 +1,5 @@
 .vscode/
+.vscode-test/
 .eslintrc.*
 tsconfig.json
 src/
