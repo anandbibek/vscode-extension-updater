@@ -54,11 +54,11 @@ export class GitLabExtensionUpdater extends ExtensionUpdater {
         this.packageName = options.packageName;
     }
 
-    private createVersionUrl(): string {
+    protected createVersionUrl(): string {
         return `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages?sort=desc&status=default&order_by=version&package_name=${this.packageName}`;
     }
 
-    private createDownloadUrl(packageName: string, version: string): string {
+    protected createDownloadUrl(packageName: string, version: string): string {
         return `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages/${this.packageType}/${packageName}/${version}/${this.getFileName()}`;
     }
 

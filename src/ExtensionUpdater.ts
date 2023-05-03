@@ -110,7 +110,8 @@ export abstract class ExtensionUpdater {
      * @param downloadUri url for the .vsix package download
      */
     protected async download(downloadUri: Uri): Promise<Uri> {
-        const downloadedPath = await asyncTmp.file(0o644, this.extensionFullName, '.vsix');
+        console.log(`Downloading extension from ${downloadUri}`);
+        const downloadedPath = await asyncTmp.file(0o644, this.extensionManifest.displayName, '.vsix');
         const localFile = fs.createWriteStream(downloadedPath.path);
 
         return new Promise<Uri>((resolve, reject) => {
@@ -149,11 +150,12 @@ export abstract class ExtensionUpdater {
 
         const comparisonResult = compareVersions(latestVersion.version, installedVersion);
         if (this.options?.reInstall ||  comparisonResult === 1 ) {
+            console.log("Newer version found..");
             return latestVersion;
-
         } else if (comparisonResult <= 0 && this.options?.showUpToDateConfirmation) {
             const message = `Extension up to date: '${this.extensionManifest.displayName} v${this.extensionManifest.version}'`;
             window.showInformationMessage(message);
+            console.log("Extension up to date")
         }
         else {
             return undefined;
